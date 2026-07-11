@@ -1,23 +1,22 @@
-# 🎮 Virtual Game Controller using AI Hand Gestures
+# 🎮 AI Virtual Game Controller
 
-## 📌 Project Overview
-
-The Virtual Game Controller is an AI-based Human-Computer Interaction project that allows users to control games and mouse operations using real-time hand gestures. It uses OpenCV and MediaPipe for hand tracking and gesture recognition, providing a touch-free control experience.
-
----
+A Computer Vision based Virtual Game Controller that allows users to control the mouse using hand gestures.
 
 ## 🚀 Features
 
-- 🖐 Real-time hand detection
-- ✋ 21 hand landmark tracking
-- 🎯 Finger counting
-- 🖱 Smooth virtual mouse movement
-- 👆 Left click gesture
-- 👉 Right click gesture
-- 🤏 Drag and Drop support
-- 🎮 Game control using gestures
-- 📊 FPS counter
-- 💻 Professional dashboard
+- 🖱️ Virtual Mouse Control
+- 👆 Left Click Gesture
+- 🤟 Right Click Gesture
+- ✊ Drag & Drop
+- 🖐️ Release Gesture
+- 📜 Air Scroll
+- 🎯 Gesture Stabilization
+- ✨ Smooth Cursor Movement
+- 📊 FPS Counter
+- ⏱️ Session Timer
+- 📸 Screenshot Capture
+- ⚙️ Configurable Settings
+- 🎨 Professional Dashboard
 
 ---
 
@@ -28,64 +27,60 @@ The Virtual Game Controller is an AI-based Human-Computer Interaction project th
 - MediaPipe
 - PyAutoGUI
 - AutoPy
-- NumPy
 
 ---
 
 ## 📂 Project Structure
 
-```
+```text
 Virtual-Game-Controller
 │
 ├── src
-├── assets
-├── models
-├── requirements.txt
+│   ├── controllers
+│   ├── detectors
+│   ├── utils
+│   ├── ui.py
+│   └── main.py
+│
+├── logs
+├── screenshots
 ├── README.md
-└── venv
+└── requirements.txt
 ```
 
 ---
 
-## ▶️ How to Run
+## ✋ Gesture Controls
 
-1. Clone the repository.
-2. Install dependencies:
-
-```
-pip install -r requirements.txt
-```
-
-3. Run the project:
-
-```
-python src/main.py
-```
+| Gesture | Action |
+|----------|--------|
+| ☝️ 1 Finger | Move Mouse |
+| ✌️ 2 Fingers | Left Click |
+| 🤟 3 Fingers | Right Click |
+| 🖖 4 Fingers | Scroll |
+| ✊ Closed Fist | Drag |
+| 🖐️ Open Palm | Release |
 
 ---
 
-## 📸 Output
+## 📈 Future Improvements
 
-- Real-time webcam hand tracking
-- Mouse control using hand gestures
-- Game control through finger gestures
-
----
-
-## 🔮 Future Scope
-
-- Gesture customization
-- Multi-hand support
-- Voice control integration
-- AI gesture learning
-- Cross-platform support
+- Voice Commands
+- Multi-Hand Detection
+- Gesture Customization
+- Game Profiles
+- AI Gesture Learning
 
 ---
 
-## 👩‍💻 Developed By
+## 👩‍💻 Developer
 
 **Purva Ahire**
 
-Diploma in Computer Science
+Diploma in Computer Science Engineering
 
-AI & ML Enthusiast
+AI & Machine Learning Enthusiast
+
+---
+
+## ⭐ If you like this project, give it a Star on GitHub.

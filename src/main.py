@@ -1,25 +1,33 @@
 import cv2
 import time
 
-from hand_detector import HandDetector
-from automation import move_left, move_right, jump, attack, pause_game
-from mouse_controller import (
-    move_mouse,
+from detectors.hand_detector import HandDetector
+from controllers.mouse_controller import move_mouse
+from controllers.click_controller import (
     left_click,
     right_click,
     start_drag,
     stop_drag,
-    reset_click,
 )
-from fps import FPS
+from controllers.scroll_controller import scroll_up, scroll_down
+from ui import draw_dashboard
+from utils.fps import FPSCounter
+from utils.gesture_stabilizer import GestureStabilizer
+from config import CAMERA_INDEX, CLICK_DELAY, GESTURE_STABILITY
+from utils.logger import logger
 
-camera = cv2.VideoCapture(0)
+# Open Camera
+camera = cv2.VideoCapture(CAMERA_INDEX)
+logger.info("Application Started")
 
+# Initialize Objects
 detector = HandDetector()
-fps_counter = FPS()
+fps_counter = FPSCounter()
+stabilizer = GestureStabilizer(delay=GESTURE_STABILITY)
 
-last_action_time = 0
-action_delay = 1
+last_click_time = 0
+click_delay = CLICK_DELAY
+dragging = False
 
 while True:
 
@@ -31,133 +39,119 @@ while True:
     frame = cv2.flip(frame, 1)
 
     detector.detectHands(frame)
-
     landmarkList = detector.findPosition(frame)
 
     action = "None"
-    status = "No Hand"
-    mode = "Mouse + Game"
+    hand_detected = False
 
     if len(landmarkList) != 0:
 
-        status = "Hand Detected"
-
-        # Mouse Movement
-        x = landmarkList[8][1]
-        y = landmarkList[8][2]
-
-        h, w, _ = frame.shape
-
-        move_mouse(x, y, w, h)
+        hand_detected = True
 
         fingers = detector.fingersUp(landmarkList)
         total = fingers.count(1)
 
-        # Mouse Gestures
-        if fingers == [0, 1, 1, 0, 0]:
-            left_click()
-            stop_drag()
-            action = "Left Click"
+        stable = stabilizer.is_stable(total)
 
-        elif fingers == [0, 1, 1, 1, 0]:
-            right_click()
-            stop_drag()
-            action = "Right Click"
-
-        elif fingers == [0, 1, 1, 1, 1]:
-            start_drag()
-            action = "Dragging"
+        if not stable:
+            action = "Detecting..."
 
         else:
-            stop_drag()
-            reset_click()
 
-        # Game Gestures
-        current_time = time.time()
+            cam_height, cam_width, _ = frame.shape
 
-        if current_time - last_action_time > action_delay:
+            index_x = landmarkList[8][1]
+            index_y = landmarkList[8][2]
 
+            # 1 Finger -> Move Mouse
             if total == 1:
-                move_left()
-                action = "Move Left"
+                move_mouse(index_x, index_y, cam_width, cam_height)
+                action = "Move Mouse"
 
+            # 2 Fingers -> Left Click
             elif total == 2:
-                move_right()
-                action = "Move Right"
 
+                current_time = time.time()
+
+                if current_time - last_click_time > click_delay:
+                    left_click()
+                    last_click_time = current_time
+
+                action = "Left Click"
+
+            # 3 Fingers -> Right Click
             elif total == 3:
-                jump()
-                action = "Jump"
 
+                current_time = time.time()
+
+                if current_time - last_click_time > click_delay:
+                    right_click()
+                    last_click_time = current_time
+
+                action = "Right Click"
+
+            # 4 Fingers -> Scroll
+            elif total == 4:
+
+                if index_y < cam_height // 2:
+                    scroll_up()
+                    action = "Scroll Up"
+                else:
+                    scroll_down()
+                    action = "Scroll Down"
+
+            # Closed Fist -> Drag
             elif total == 0:
-                attack()
-                action = "Attack"
 
+                if not dragging:
+                    start_drag()
+                    dragging = True
+
+                action = "Dragging"
+
+            # Open Palm -> Release
             elif total == 5:
-                pause_game()
-                action = "Pause"
 
-            last_action_time = current_time
+                if dragging:
+                    stop_drag()
+                    dragging = False
 
+                action = "Release"
+
+    # FPS & Session Time
     fps = fps_counter.get_fps()
+    session_time = fps_counter.get_session_time()
 
-    # Dashboard Background
-    cv2.rectangle(frame, (10, 10), (340, 160), (40, 40, 40), -1)
-
-    cv2.putText(
+    # Draw Dashboard
+    frame = draw_dashboard(
         frame,
-        "Virtual Game Controller",
-        (20, 35),
-        cv2.FONT_HERSHEY_SIMPLEX,
-        0.8,
-        (0, 255, 255),
-        2,
-    )
-
-    cv2.putText(
-        frame,
-        f"FPS : {fps}",
-        (20, 65),
-        cv2.FONT_HERSHEY_SIMPLEX,
-        0.7,
-        (255, 255, 255),
-        2,
-    )
-
-    cv2.putText(
-        frame,
-        f"Gesture : {action}",
-        (20, 95),
-        cv2.FONT_HERSHEY_SIMPLEX,
-        0.7,
-        (0, 255, 0),
-        2,
-    )
-
-    cv2.putText(
-        frame,
-        f"Mode : {mode}",
-        (20, 125),
-        cv2.FONT_HERSHEY_SIMPLEX,
-        0.7,
-        (255, 255, 0),
-        2,
-    )
-
-    cv2.putText(
-        frame,
-        f"Status : {status}",
-        (20, 155),
-        cv2.FONT_HERSHEY_SIMPLEX,
-        0.7,
-        (0, 0, 255),
-        2,
+        fps,
+        action,
+        hand_detected,
+        session_time,
     )
 
     cv2.imshow("Virtual Game Controller", frame)
 
-    if cv2.waitKey(1) & 0xFF == ord("q"):
+    # Keyboard Shortcuts
+    key = cv2.waitKey(1) & 0xFF
+
+    # Quit
+    if key == ord("q"):
         break
 
+    # Save Screenshot
+    elif key == ord("s"):
+        filename = f"screenshot_{int(time.time())}.png"
+        cv2.imwrite(filename, frame)
+        print(f"Screenshot saved: {filename}")
+
+    # Reset Drag State
+    elif key == ord("r"):
+        dragging = False
+        print("Gesture state reset.")
+
+
+logger.info("Application Closed")
 camera.release()
 cv2.destroyAllWindows()
