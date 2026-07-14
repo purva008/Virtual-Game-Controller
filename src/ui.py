@@ -1,93 +1,151 @@
+"""
+=========================================================
+UI Module
+=========================================================
+Draws all information on the OpenCV frame.
+=========================================================
+"""
+
 import cv2
 
+from config import (
+    FONT_SCALE,
+    FONT_THICKNESS,
+    TEXT_COLOR,
+    INFO_COLOR,
+    WARNING_COLOR
+)
 
-def draw_dashboard(frame, fps, action, hand_detected, session_time):
 
-    height, width, _ = frame.shape
+def draw_ui(
+    frame,
+    gesture,
+    hand_type,
+    fps,
+    bbox=None
+):
+    """
+    Draw UI elements on the video frame.
 
-    # Create transparent overlay
-    overlay = frame.copy()
+    Args:
+        frame       : OpenCV frame
+        gesture     : Detected gesture
+        hand_type   : Left / Right / None
+        fps         : Frames Per Second
+        bbox        : Optional hand bounding box
+                      (xmin, ymin, xmax, ymax)
+    """
 
-    cv2.rectangle(
-        overlay,
-        (0, 0),
-        (width, 100),
-        (35, 35, 35),
-        -1
-    )
+    # --------------------------------------------------
+    # Title
+    # --------------------------------------------------
 
-    alpha = 0.75
-    cv2.addWeighted(overlay, alpha, frame, 1 - alpha, 0, frame)
-
-    # Project Title
     cv2.putText(
         frame,
-        "Virtual Game Controller",
-        (20, 30),
+        "AI Virtual Game Controller",
+        (10, 30),
         cv2.FONT_HERSHEY_SIMPLEX,
-        0.9,
-        (0, 255, 255),
-        2
+        FONT_SCALE,
+        INFO_COLOR,
+        FONT_THICKNESS
     )
 
+    # --------------------------------------------------
+    # Gesture
+    # --------------------------------------------------
+
+    cv2.putText(
+        frame,
+        f"Gesture : {gesture}",
+        (10, 70),
+        cv2.FONT_HERSHEY_SIMPLEX,
+        FONT_SCALE,
+        TEXT_COLOR,
+        FONT_THICKNESS
+    )
+
+    # --------------------------------------------------
+    # Hand Type
+    # --------------------------------------------------
+
+    hand_text = hand_type if hand_type else "Not Detected"
+
+    cv2.putText(
+        frame,
+        f"Hand : {hand_text}",
+        (10, 110),
+        cv2.FONT_HERSHEY_SIMPLEX,
+        FONT_SCALE,
+        TEXT_COLOR,
+        FONT_THICKNESS
+    )
+
+    # --------------------------------------------------
     # FPS
+    # --------------------------------------------------
+
     cv2.putText(
         frame,
         f"FPS : {fps}",
-        (20, 60),
+        (10, 150),
         cv2.FONT_HERSHEY_SIMPLEX,
-        0.6,
-        (0, 255, 0),
-        2
+        FONT_SCALE,
+        INFO_COLOR,
+        FONT_THICKNESS
     )
 
-    # Session Timer
-    cv2.putText(
-        frame,
-        f"Session : {session_time}",
-        (20, 85),
-        cv2.FONT_HERSHEY_SIMPLEX,
-        0.6,
-        (255, 255, 255),
-        2
-    )
+    # --------------------------------------------------
+    # Detection Status
+    # --------------------------------------------------
 
-    # Current Gesture
-    cv2.putText(
-        frame,
-        f"Gesture : {action}",
-        (250, 60),
-        cv2.FONT_HERSHEY_SIMPLEX,
-        0.6,
-        (255, 255, 255),
-        2
-    )
+    if hand_type:
 
-    # Hand Status
-    if hand_detected:
         status = "Hand Detected"
         color = (0, 255, 0)
+
     else:
-        status = "No Hand"
-        color = (0, 0, 255)
+
+        status = "No Hand Detected"
+        color = WARNING_COLOR
 
     cv2.putText(
         frame,
         status,
-        (250, 85),
+        (10, 190),
         cv2.FONT_HERSHEY_SIMPLEX,
-        0.6,
+        FONT_SCALE,
         color,
-        2
+        FONT_THICKNESS
     )
 
-    # Status Indicator
-    cv2.circle(
+    # --------------------------------------------------
+    # Bounding Box
+    # --------------------------------------------------
+
+    if bbox is not None:
+
+        x_min, y_min, x_max, y_max = bbox
+
+        cv2.rectangle(
+            frame,
+            (x_min, y_min),
+            (x_max, y_max),
+            (255, 255, 0),
+            2
+        )
+
+    # --------------------------------------------------
+    # Exit Message
+    # --------------------------------------------------
+
+    cv2.putText(
         frame,
-        (width - 30, 30),
-        10,
-        color,
-        -1
+        "Press 'Q' to Exit",
+        (10, frame.shape[0] - 20),
+        cv2.FONT_HERSHEY_SIMPLEX,
+        0.7,
+        WARNING_COLOR,
+        2
     )
 
     return frame

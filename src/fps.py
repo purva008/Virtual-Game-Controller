@@ -1,16 +1,26 @@
 import time
 
 
-class FPS:
+class FPSCounter:
+    """
+    Calculates Frames Per Second (FPS).
+    """
 
     def __init__(self):
-        self.prev_time = time.time()
+        self.previous_time = 0
 
-    def get_fps(self):
+    def update(self):
+        """
+        Returns the current FPS.
+        """
+
         current_time = time.time()
 
-        fps = 1 / (current_time - self.prev_time)
+        fps = 0
 
-        self.prev_time = current_time
+        if self.previous_time != 0:
+            fps = 1 / (current_time - self.previous_time)
+
+        self.previous_time = current_time
 
         return int(fps)

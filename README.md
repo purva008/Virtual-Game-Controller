@@ -1,86 +1,203 @@
 # 🎮 AI Virtual Game Controller
 
-A Computer Vision based Virtual Game Controller that allows users to control the mouse using hand gestures.
-
-## 🚀 Features
-
-- 🖱️ Virtual Mouse Control
-- 👆 Left Click Gesture
-- 🤟 Right Click Gesture
-- ✊ Drag & Drop
-- 🖐️ Release Gesture
-- 📜 Air Scroll
-- 🎯 Gesture Stabilization
-- ✨ Smooth Cursor Movement
-- 📊 FPS Counter
-- ⏱️ Session Timer
-- 📸 Screenshot Capture
-- ⚙️ Configurable Settings
-- 🎨 Professional Dashboard
+An AI-powered Virtual Game Controller that uses **Computer Vision**, **MediaPipe Hands**, and **OpenCV** to control **Temple Run** using real-time hand movements instead of a physical keyboard or controller.
 
 ---
 
-## 🛠 Technologies Used
+## 📌 Project Overview
 
-- Python
+The AI Virtual Game Controller detects a user's hand using a webcam and tracks its movement in real time. Instead of recognizing static gestures, the system calculates the movement of the hand's center and converts it into game actions such as moving left, moving right, jumping, sliding, and pausing.
+
+The detected motions are translated into keyboard events that control Temple Run running inside an Android emulator such as BlueStacks.
+
+---
+
+## ✨ Features
+
+- 🎥 Real-time webcam-based hand tracking
+- ✋ MediaPipe 21-hand landmark detection
+- 🎯 Motion-based gesture recognition
+- 🎮 Temple Run game integration
+- ⌨️ Keyboard automation
+- 📊 Live FPS counter
+- 📦 Modular project architecture
+- 🖥️ Interactive OpenCV dashboard
+
+---
+
+## 🎮 Supported Game
+
+- Temple Run
+- Temple Run 2 (Android Emulator)
+
+---
+
+## 🛠️ Technologies Used
+
+- Python 3.12
 - OpenCV
 - MediaPipe
+- NumPy
 - PyAutoGUI
-- AutoPy
+- Pynput
+- Android Emulator (BlueStacks)
 
 ---
 
-## 📂 Project Structure
+## 📁 Project Structure
 
-```text
+```
 Virtual-Game-Controller
 │
 ├── src
 │   ├── controllers
+│   │   ├── click_controller.py
+│   │   ├── game_controller.py
+│   │   ├── keyboard_controller.py
+│   │   └── mouse_controller.py
+│   │
 │   ├── detectors
-│   ├── utils
-│   ├── ui.py
-│   └── main.py
+│   │   ├── gesture_detector.py
+│   │   └── hand_detector.py
+│   │
+│   ├── config.py
+│   ├── logger.py
+│   ├── main.py
+│   └── ui.py
 │
 ├── logs
-├── screenshots
 ├── README.md
-└── requirements.txt
+├── ABOUT.md
+├── requirements.txt
+└── LICENSE
 ```
 
 ---
 
-## ✋ Gesture Controls
+## 🖥️ Installation
 
-| Gesture | Action |
-|----------|--------|
-| ☝️ 1 Finger | Move Mouse |
-| ✌️ 2 Fingers | Left Click |
-| 🤟 3 Fingers | Right Click |
-| 🖖 4 Fingers | Scroll |
-| ✊ Closed Fist | Drag |
-| 🖐️ Open Palm | Release |
+Clone the repository:
+
+```bash
+git clone https://github.com/purva008/Virtual-Game-Controller.git
+
+cd Virtual-Game-Controller
+```
+
+Create a virtual environment:
+
+```bash
+python -m venv venv
+```
+
+Activate it:
+
+Windows
+
+```bash
+venv\Scripts\activate
+```
+
+Linux / macOS
+
+```bash
+source venv/bin/activate
+```
+
+Install dependencies:
+
+```bash
+pip install -r requirements.txt
+```
 
 ---
 
-## 📈 Future Improvements
+## ▶️ Running the Project
 
-- Voice Commands
-- Multi-Hand Detection
-- Gesture Customization
-- Game Profiles
-- AI Gesture Learning
+Navigate to the source folder:
 
----
+```bash
+cd src
+```
 
-## 👩‍💻 Developer
+Run:
 
-**Purva Ahire**
-
-Diploma in Computer Science Engineering
-
-AI & Machine Learning Enthusiast
+```bash
+python main.py
+```
 
 ---
 
-## ⭐ If you like this project, give it a Star on GitHub.
+## 🎮 Temple Run Controls
+
+| Hand Motion | Game Action |
+|-------------|-------------|
+| Move Left | Move Left |
+| Move Right | Move Right |
+| Move Up | Jump |
+| Move Down | Slide |
+| Open Palm | Pause |
+
+---
+
+## ⚙️ Workflow
+
+```
+Webcam
+   │
+   ▼
+MediaPipe Hand Detection
+   │
+   ▼
+Hand Landmark Extraction
+   │
+   ▼
+Hand Center Calculation
+   │
+   ▼
+Motion Detection
+   │
+   ▼
+Game Controller
+   │
+   ▼
+Keyboard Controller
+   │
+   ▼
+Temple Run
+```
+
+---
+
+## 📊 Advantages
+
+- Contactless game control
+- Real-time response
+- No external sensors required
+- Low hardware requirements
+- Easy to extend for other games
+
+---
+
+## 🚀 Future Enhancements
+
+- Multi-game support
+- Custom gesture mapping
+- Voice commands
+- Two-hand interaction
+- AI-based gesture classification
+- User calibration mode
+
+---
+
+## 👨‍💻 Author
+
+**Uttam Ahire**
+
+AI Virtual Game Controller using Computer Vision and MediaPipe.
+
+---
+
+## 📜 License
+
+This project is licensed under the MIT License.

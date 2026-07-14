@@ -1,157 +1,193 @@
+"""
+=========================================================
+AI Virtual Game Controller
+Main Application
+=========================================================
+Uses webcam input to control Temple Run
+through real-time hand motion.
+=========================================================
+"""
+
 import cv2
 import time
 
-from detectors.hand_detector import HandDetector
-from controllers.mouse_controller import move_mouse
-from controllers.click_controller import (
-    left_click,
-    right_click,
-    start_drag,
-    stop_drag,
+from config import (
+    CAMERA_INDEX,
+    CAMERA_WIDTH,
+    CAMERA_HEIGHT,
+    WINDOW_NAME
 )
-from controllers.scroll_controller import scroll_up, scroll_down
-from ui import draw_dashboard
-from utils.fps import FPSCounter
-from utils.gesture_stabilizer import GestureStabilizer
-from config import CAMERA_INDEX, CLICK_DELAY, GESTURE_STABILITY
-from utils.logger import logger
 
-# Open Camera
-camera = cv2.VideoCapture(CAMERA_INDEX)
-logger.info("Application Started")
+from detectors.hand_detector import HandDetector
+from detectors.gesture_detector import GestureDetector
+from controllers.game_controller import GameController
+from ui import draw_ui
 
-# Initialize Objects
+
+# =========================================================
+# Initialize Modules
+# =========================================================
+
 detector = HandDetector()
-fps_counter = FPSCounter()
-stabilizer = GestureStabilizer(delay=GESTURE_STABILITY)
+gesture_detector = GestureDetector()
+game_controller = GameController()
 
-last_click_time = 0
-click_delay = CLICK_DELAY
-dragging = False
 
+# =========================================================
+# Initialize Camera
+# =========================================================
+
+cap = cv2.VideoCapture(CAMERA_INDEX)
+
+cap.set(cv2.CAP_PROP_FRAME_WIDTH, CAMERA_WIDTH)
+cap.set(cv2.CAP_PROP_FRAME_HEIGHT, CAMERA_HEIGHT)
+
+if not cap.isOpened():
+    print("ERROR: Unable to access webcam.")
+    exit()
+
+print("=" * 55)
+print("        AI Virtual Game Controller")
+print("        Motion-Based Temple Run Controller")
+print("=" * 55)
+print("Controls:")
+print("Move Hand Left   -> LEFT")
+print("Move Hand Right  -> RIGHT")
+print("Move Hand Up     -> JUMP")
+print("Move Hand Down   -> SLIDE")
+print("Open Palm        -> PAUSE")
+print("Press Q to Exit")
+print("=" * 55)
+
+
+# =========================================================
+# FPS
+# =========================================================
+
+previous_time = 0
+
+
+# =========================================================
+# Main Loop
+# =========================================================
+
+display_action = "NONE"
 while True:
 
-    success, frame = camera.read()
+    success, frame = cap.read()
 
     if not success:
+        print("Camera frame not received.")
         break
 
+    # Mirror the camera
     frame = cv2.flip(frame, 1)
 
-    detector.detectHands(frame)
-    landmarkList = detector.findPosition(frame)
+    # -----------------------------------------------------
+    # Detect Hand
+    # -----------------------------------------------------
 
-    action = "None"
-    hand_detected = False
+    frame = detector.find_hands(frame)
 
-    if len(landmarkList) != 0:
+    (
+        landmarks,
+        landmark_dict,
+        hand_type,
+        bbox,
+        hand_center
+    ) = detector.get_landmarks(frame)
 
-        hand_detected = True
+    # -----------------------------------------------------
+    # Detect Motion
+    # -----------------------------------------------------
 
-        fingers = detector.fingersUp(landmarkList)
-        total = fingers.count(1)
-
-        stable = stabilizer.is_stable(total)
-
-        if not stable:
-            action = "Detecting..."
-
-        else:
-
-            cam_height, cam_width, _ = frame.shape
-
-            index_x = landmarkList[8][1]
-            index_y = landmarkList[8][2]
-
-            # 1 Finger -> Move Mouse
-            if total == 1:
-                move_mouse(index_x, index_y, cam_width, cam_height)
-                action = "Move Mouse"
-
-            # 2 Fingers -> Left Click
-            elif total == 2:
-
-                current_time = time.time()
-
-                if current_time - last_click_time > click_delay:
-                    left_click()
-                    last_click_time = current_time
-
-                action = "Left Click"
-
-            # 3 Fingers -> Right Click
-            elif total == 3:
-
-                current_time = time.time()
-
-                if current_time - last_click_time > click_delay:
-                    right_click()
-                    last_click_time = current_time
-
-                action = "Right Click"
-
-            # 4 Fingers -> Scroll
-            elif total == 4:
-
-                if index_y < cam_height // 2:
-                    scroll_up()
-                    action = "Scroll Up"
-                else:
-                    scroll_down()
-                    action = "Scroll Down"
-
-            # Closed Fist -> Drag
-            elif total == 0:
-
-                if not dragging:
-                    start_drag()
-                    dragging = True
-
-                action = "Dragging"
-
-            # Open Palm -> Release
-            elif total == 5:
-
-                if dragging:
-                    stop_drag()
-                    dragging = False
-
-                action = "Release"
-
-    # FPS & Session Time
-    fps = fps_counter.get_fps()
-    session_time = fps_counter.get_session_time()
-
-    # Draw Dashboard
-    frame = draw_dashboard(
-        frame,
-        fps,
-        action,
-        hand_detected,
-        session_time,
+    action = gesture_detector.recognize(
+        hand_center,
+        landmark_dict,
+        hand_type
     )
 
-    cv2.imshow("Virtual Game Controller", frame)
+    game_controller.execute(action)
+    # -----------------------------------------------------
+    # Execute Game Action
+    # -----------------------------------------------------
 
-    # Keyboard Shortcuts
+    if action != "NONE":
+        display_action = action
+        game_controller.execute(action)
+
+    # -----------------------------------------------------
+    # FPS Calculation
+    # -----------------------------------------------------
+
+    current_time = time.time()
+
+    if previous_time == 0:
+        fps = 0
+    else:
+        fps = int(1 / (current_time - previous_time))
+
+    previous_time = current_time
+
+    # -----------------------------------------------------
+    # Draw Hand Center
+    # -----------------------------------------------------
+
+    if hand_center is not None:
+
+        cv2.circle(
+            frame,
+            hand_center,
+            8,
+            (0, 0, 255),
+            -1
+        )
+
+        cv2.putText(
+            frame,
+            "CENTER",
+            (hand_center[0] + 10, hand_center[1]),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            0.6,
+            (0, 0, 255),
+            2
+        )
+
+    # -----------------------------------------------------
+    # Draw UI
+    # -----------------------------------------------------
+
+    frame = draw_ui(
+        frame=frame,
+        gesture=action,
+        hand_type=hand_type,
+        fps=fps,
+        bbox=bbox
+    )
+
+    # -----------------------------------------------------
+    # Show Window
+    # -----------------------------------------------------
+
+    cv2.imshow(
+        WINDOW_NAME,
+        frame
+    )
+
     key = cv2.waitKey(1) & 0xFF
 
-    # Quit
     if key == ord("q"):
         break
 
-    # Save Screenshot
-    elif key == ord("s"):
-        filename = f"screenshot_{int(time.time())}.png"
-        cv2.imwrite(filename, frame)
-        print(f"Screenshot saved: {filename}")
 
-    # Reset Drag State
-    elif key == ord("r"):
-        dragging = False
-        print("Gesture state reset.")
+# =========================================================
+# Cleanup
+# =========================================================
 
+cap.release()
 
-logger.info("Application Closed")
-camera.release()
+detector.close()
+
 cv2.destroyAllWindows()
+
+print("\nApplication Closed Successfully.")
