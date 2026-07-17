@@ -1,336 +1,179 @@
-# 🎮 AI Virtual Game Controller
+# 🎮 AI Virtual Game Controller using Hand Gesture Recognition
 
-> **An AI-powered Human–Computer Interaction System for Real-Time Gesture-Based Game Control**
-
-![Python](https://img.shields.io/badge/Python-3.x-blue.svg)
-![OpenCV](https://img.shields.io/badge/OpenCV-Computer%20Vision-green)
-![MediaPipe](https://img.shields.io/badge/MediaPipe-Hand%20Tracking-orange)
-![AI](https://img.shields.io/badge/Artificial-Intelligence-red)
-![Status](https://img.shields.io/badge/Project-Completed-success)
+> A real-time AI-powered hand gesture recognition system that enables users to play **Temple Run** without touching the keyboard. The project uses Computer Vision and Artificial Intelligence to detect hand movements and convert them into game controls.
 
 ---
 
-# 📖 Overview
+## 📌 Overview
 
-**AI Virtual Game Controller** is a Final Year Engineering Project that enables users to control keyboard-based games using **real-time hand gestures** instead of traditional input devices.
+The AI Virtual Game Controller is a Final Year Engineering Project developed using Python, OpenCV, and MediaPipe.
 
-The system combines **Computer Vision**, **Artificial Intelligence**, and **Machine Learning** to recognize hand movements through a webcam and convert them into game actions with high accuracy and low latency.
+The system tracks the user's hand through a webcam, recognizes predefined gestures, processes them through an AI-based gesture pipeline, and converts them into keyboard commands for controlling the Temple Run game.
 
-This project demonstrates the practical implementation of modern AI technologies for **Human–Computer Interaction (HCI)**.
-
----
-
-# 🎯 Project Objectives
-
-- Develop a touchless game control system.
-- Replace keyboard input with natural hand gestures.
-- Demonstrate AI-based gesture recognition.
-- Build a modular and scalable software architecture.
-- Achieve real-time performance with low latency.
+Instead of pressing keyboard keys, players simply move their hand in front of the camera.
 
 ---
 
-# ✨ Features
+## 🚀 Features
 
-## AI Features
-
-- Real-Time Hand Detection
-- AI Gesture Recognition
-- Adaptive Motion Threshold Engine
-- Gesture Smoothing Engine
-- Confidence-Based Prediction
-- Motion Trail Tracking
-
----
-
-## System Features
-
-- Automatic Camera Recovery
-- Performance Monitoring
-- FPS Counter
-- CPU & RAM Monitoring
-- Runtime Statistics
-- Professional Dashboard
+- Real-time hand tracking
+- AI-based gesture recognition
+- Gesture smoothing using majority voting
+- Adaptive threshold algorithm
+- Temple Run integration
+- Professional dashboard
+- Live FPS monitoring
+- Camera recovery system
+- System information monitoring
+- Modular software architecture
+- Easy to extend for future AI modules
 
 ---
 
-## Software Features
+## 🎯 Supported Temple Run Controls
 
-- Modular Architecture
-- Object-Oriented Design
-- Easy Configuration
-- Extensible AI Pipeline
-- Professional UI
-
----
-
-# 🖐 Supported Gestures
-
-| Gesture | Action |
-|----------|--------|
-| Move Left | ⬅ LEFT |
-| Move Right | ➡ RIGHT |
-| Move Up | ⬆ JUMP |
-| Move Down | ⬇ SLIDE |
-| Open Palm | ⏸ PAUSE |
+| Hand Gesture | Game Action |
+|--------------|-------------|
+| Move Left | Left Arrow |
+| Move Right | Right Arrow |
+| Move Up | Jump |
+| Move Down | Slide |
+| Open Palm | Pause |
 
 ---
 
-# 🏗 Software Architecture
+## 🧠 AI Pipeline
 
 ```
-Web Camera
-     │
-     ▼
-Hand Detector
-     │
-     ▼
-Gesture Detector
-     │
-     ▼
+Camera
+      │
+      ▼
+Hand Detection
+      │
+      ▼
+Landmark Extraction
+      │
+      ▼
+Motion Analysis
+      │
+      ▼
 Adaptive Threshold
-     │
-     ▼
-Gesture Smoother
-     │
-     ▼
-AI Core
-     │
-     ▼
-Game Controller
-     │
-     ▼
-Keyboard Controller
+      │
+      ▼
+Gesture Smoothing
+      │
+      ▼
+AI Core Engine
+      │
+      ▼
+Temple Run Controller
 ```
 
 ---
 
-# 📂 Project Structure
+## 🏗 Project Structure
 
 ```
-AI_Virtual_Game_Controller/
+Virtual-Game-Controller/
 │
-├── ai/
-│   ├── ai_core.py
-│   ├── adaptive_threshold.py
-│   ├── ai_statistics.py
-│   └── gesture_smoother.py
+├── src/
+│   ├── ai/
+│   ├── controllers/
+│   ├── detectors/
+│   ├── system/
+│   ├── ui/
+│   ├── logger/
+│   ├── main.py
+│   └── config.py
 │
-├── controllers/
-│   ├── game_controller.py
-│   └── keyboard_controller.py
-│
-├── detectors/
-│   ├── hand_detector.py
-│   └── gesture_detector.py
-│
-├── monitoring/
-│   ├── camera_recovery.py
-│   ├── performance_monitor.py
-│   └── system_info.py
-│
-├── ui/
-│   ├── dashboard.py
-│   ├── dashboard_panel.py
-│   ├── cards.py
-│   ├── theme.py
-│   └── ui.py
-│
-├── config.py
-├── main.py
-├── requirements.txt
+├── assets/
+├── docs/
 ├── README.md
-├── LICENSE
-└── ABOUT.md
+├── ABOUT.md
+└── requirements.txt
 ```
 
 ---
 
-# 🧠 Technologies Used
+## 🛠 Technologies Used
 
-## Programming Language
-
-- Python 3.11.x
-
-## Computer Vision
-
+- Python
 - OpenCV
-- MediaPipe Hands
-
-## Artificial Intelligence
-
-- Gesture Classification
-- Adaptive Thresholding
-- Gesture Smoothing
-- Motion Analysis
-
-## System Monitoring
-
+- MediaPipe
+- NumPy
+- PyAutoGUI
 - psutil
+- TensorFlow Lite (MediaPipe backend)
 
 ---
 
-# ⚙ Installation
+## ▶️ Installation
+
+Clone the repository:
 
 ```bash
-python -m pip install --upgrade pip
-
-pip install -r requirements.txt
-
-# #  Verify Installation
-
-```bash
-python -c "import cv2;print(cv2.__version__)"
-python -c "import mediapipe as mp;print(mp.__version__)"
-python -c "import psutil;print(psutil.__version__)"
-python -c "import pynput;print('Pynput OK')"
-
-## Clone Repository
-
-```bash
-git clone https://github.com/purva008/AI-Virtual-Game-Controller.git
+git clone <https://github.com/purva008/Virtual-Game-Controller>
 ```
 
----
-
-## Navigate to Project
+Create a virtual environment:
 
 ```bash
-cd AI-Virtual-Game-Controller
+python -m venv venv
 ```
 
----
+Activate:
 
-## Install Dependencies
+Windows
+
+```bash
+venv\Scripts\activate
+```
+
+Install dependencies:
 
 ```bash
 pip install -r requirements.txt
 ```
 
----
-
-# ▶ Running the Project
+Run:
 
 ```bash
-python main.py
+python src/main.py
 ```
 
 ---
 
-# 📊 Dashboard Information
+## 🎮 Usage
 
-The professional dashboard displays:
-
-- Current Gesture
-- FPS
-- Average FPS
-- Runtime
-- CPU Usage
-- RAM Usage
-- Camera Status
-- AI Confidence
-- Motion Trail
-- Bounding Box
+1. Launch Temple Run.
+2. Run the application.
+3. Allow webcam access.
+4. Stand in front of the camera.
+5. Perform gestures to control the game.
 
 ---
 
-# 🔧 Configuration
+## 📈 Future Scope
 
-All application settings are managed through:
-
-```
-config.py
-```
-
-Example:
-
-```python
-CAMERA_WIDTH = 1280
-CAMERA_HEIGHT = 720
-
-MOTION_COOLDOWN = 0.25
-
-HISTORY_SIZE = 10
-
-MINIMUM_VOTES = 6
-```
+- Deep Learning gesture prediction
+- Gesture personalization
+- Dynamic gesture training
+- Voice + gesture hybrid controller
+- Multi-player gesture control
+- VR/AR interaction support
 
 ---
 
-# 🧪 Testing
-
-Verify:
-
-- Webcam detection
-- Hand detection
-- Gesture recognition
-- Dashboard updates
-- Keyboard actions
-- Camera recovery
-- FPS stability
-
----
-
-# 📈 Future Enhancements
-
-- Deep Learning Gesture Recognition
-- Custom Gesture Training
-- Voice Commands
-- Multi-Hand Support
-- Multiplayer Mode
-- Game Profiles
-- Mobile Camera Integration
-- Gesture Recording
-- AI Personalization
-
----
-
-# 📚 Academic Contribution
-
-This project demonstrates practical implementation of:
-
-- Artificial Intelligence
-- Computer Vision
-- Human Computer Interaction
-- Software Engineering
-- Object-Oriented Programming
-- Real-Time Systems
-
----
-
-# 👨‍💻 Developer
+## 👩‍💻 Developer
 
 **Purva Ahire**
 
----
+Final Year Engineering Project
 
-# 📜 License
-
-This project is developed for **academic and research purposes**
-
-© 2026 Purva Ahire  
-All Rights Reserved.
+Artificial Intelligence | Computer Vision | Human Computer Interaction
 
 ---
 
-# ⭐ Acknowledgements
+## 📄 License
 
-Special thanks to:
-
-- OpenCV Community
-- Google MediaPipe
-- Python Community
-- Faculty and Project Guide
-- Open Source Contributors
-
----
-
-# 📬 Contact
-
-For academic discussions or project-related queries:
-
-**Developer:** Purva Ahire
-
----
-
-## ⭐ If you found this project useful, consider giving it a Star on GitHub.
+This project is developed for academic and educational purposes.
