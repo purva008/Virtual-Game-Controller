@@ -128,8 +128,8 @@ class HandDetector:
         bbox = (
             x_min,
             y_min,
-            x_max,
-            y_max
+            x_max - x_min,
+            y_max - y_min
         )
 
         # -----------------------------

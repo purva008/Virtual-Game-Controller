@@ -3,191 +3,302 @@
 AI Virtual Game Controller
 Main Application
 =========================================================
-Uses webcam input to control Temple Run
-through real-time hand motion.
+
+This is the central application that integrates:
+
+✓ Camera Manager
+✓ Hand Tracker
+✓ Gesture Detector
+✓ AI Core
+✓ Game Controller
+✓ Professional UI
+✓ Logger
+✓ Motion Trail
+✓ System Monitor
+✓ Camera Recovery
+✓ Performance Statistics
+
+Author : Uttam Ahire
+Version : 4.0
 =========================================================
 """
 
 import cv2
 import time
+from collections import deque
 
-from config import (
-    CAMERA_INDEX,
-    CAMERA_WIDTH,
-    CAMERA_HEIGHT,
-    WINDOW_NAME
-)
+# ==========================================================
+# Configuration
+# ==========================================================
+
+from config import *
+
+# ==========================================================
+# Detection
+# ==========================================================
 
 from detectors.hand_detector import HandDetector
 from detectors.gesture_detector import GestureDetector
+
+# ==========================================================
+# Controllers
+# ==========================================================
+
 from controllers.game_controller import GameController
-from ui import draw_ui
+
+# ==========================================================
+# Monitoring
+# ==========================================================
+
+from system.performance_monitor import PerformanceMonitor
+from system.system_info import SystemInfo
+from system.camera_recovery import CameraRecovery
+
+# ==========================================================
+# User Interface
+# ==========================================================
+
+from ui.ui import draw_ui
 
 
-# =========================================================
-# Initialize Modules
-# =========================================================
+def main():
 
-detector = HandDetector()
-gesture_detector = GestureDetector()
-game_controller = GameController()
+    print("=" * 60)
+    print("AI Virtual Game Controller")
+    print("=" * 60)
 
+    camera = cv2.VideoCapture(CAMERA_INDEX)
 
-# =========================================================
-# Initialize Camera
-# =========================================================
+    camera.set(cv2.CAP_PROP_FRAME_WIDTH, CAMERA_WIDTH)
+    camera.set(cv2.CAP_PROP_FRAME_HEIGHT, CAMERA_HEIGHT)
 
-cap = cv2.VideoCapture(CAMERA_INDEX)
+    if not camera.isOpened():
+        print("Camera Error")
+        return
 
-cap.set(cv2.CAP_PROP_FRAME_WIDTH, CAMERA_WIDTH)
-cap.set(cv2.CAP_PROP_FRAME_HEIGHT, CAMERA_HEIGHT)
+    camera_recovery = CameraRecovery()
+    camera_recovery.attach_camera(camera)
 
-if not cap.isOpened():
-    print("ERROR: Unable to access webcam.")
-    exit()
+    performance = PerformanceMonitor()
 
-print("=" * 55)
-print("        AI Virtual Game Controller")
-print("        Motion-Based Temple Run Controller")
-print("=" * 55)
-print("Controls:")
-print("Move Hand Left   -> LEFT")
-print("Move Hand Right  -> RIGHT")
-print("Move Hand Up     -> JUMP")
-print("Move Hand Down   -> SLIDE")
-print("Open Palm        -> PAUSE")
-print("Press Q to Exit")
-print("=" * 55)
+    system_info = SystemInfo()
 
+    hand_detector = HandDetector()
 
-# =========================================================
-# FPS
-# =========================================================
+    gesture_detector = GestureDetector()
 
-previous_time = 0
+    game_controller = GameController()
 
+    # =====================================================
+    # Runtime Variables
+    # =====================================================
 
-# =========================================================
-# Main Loop
-# =========================================================
+    motion_trail = deque(maxlen=25)
 
-display_action = "NONE"
-while True:
+    running = True
 
-    success, frame = cap.read()
+    while running:
 
-    if not success:
-        print("Camera frame not received.")
-        break
+        # ---------------------------------------------
+        # Performance Update
+        # ---------------------------------------------
 
-    # Mirror the camera
-    frame = cv2.flip(frame, 1)
+        performance.update()
 
-    # -----------------------------------------------------
-    # Detect Hand
-    # -----------------------------------------------------
+        stats = performance.get_stats()
 
-    frame = detector.find_hands(frame)
+        fps = stats["fps"]
+        average_fps = stats["average_fps"]
+        runtime = stats["runtime"]
 
-    (
-        landmarks,
-        landmark_dict,
-        hand_type,
-        bbox,
-        hand_center
-    ) = detector.get_landmarks(frame)
+        # ---------------------------------------------
+        # Camera Recovery Check
+        # ---------------------------------------------
 
-    # -----------------------------------------------------
-    # Detect Motion
-    # -----------------------------------------------------
+        if not camera_recovery.check_camera():
 
-    action = gesture_detector.recognize(
-        hand_center,
-        landmark_dict,
-        hand_type
-    )
+            print("[Camera] Recovery Started...")
 
-    game_controller.execute(action)
-    # -----------------------------------------------------
-    # Execute Game Action
-    # -----------------------------------------------------
+            if camera_recovery.recover():
 
-    if action != "NONE":
-        display_action = action
-        game_controller.execute(action)
+                camera = camera_recovery.get_camera()
 
-    # -----------------------------------------------------
-    # FPS Calculation
-    # -----------------------------------------------------
+            else:
 
-    current_time = time.time()
+                continue
 
-    if previous_time == 0:
-        fps = 0
-    else:
-        fps = int(1 / (current_time - previous_time))
+        # ---------------------------------------------
+        # Capture Frame
+        # ---------------------------------------------
 
-    previous_time = current_time
+        success, frame = camera.read()
 
-    # -----------------------------------------------------
-    # Draw Hand Center
-    # -----------------------------------------------------
+        if not success:
 
-    if hand_center is not None:
+            continue
 
-        cv2.circle(
-            frame,
+        camera_recovery.update_frame_timestamp()
+
+        # Mirror image
+        frame = cv2.flip(frame, 1)
+
+        # ---------------------------------------------
+        # Hand Detection
+        # ---------------------------------------------
+
+        frame = hand_detector.find_hands(frame)
+
+        (
+            landmarks,
+            landmark_dict,
+            hand_type,
+            bbox,
+            hand_center
+
+        ) = hand_detector.get_landmarks(frame)
+
+        # ---------------------------------------------
+        # Motion Trail
+        # ---------------------------------------------
+
+        if hand_center is not None:
+
+            motion_trail.append(hand_center)
+
+        # ---------------------------------------------
+        # Gesture Recognition
+        # ---------------------------------------------
+
+        gesture = gesture_detector.recognize(
+
             hand_center,
-            8,
-            (0, 0, 255),
-            -1
+
+            landmark_dict,
+
+            hand_type
+
         )
 
-        cv2.putText(
-            frame,
-            "CENTER",
-            (hand_center[0] + 10, hand_center[1]),
-            cv2.FONT_HERSHEY_SIMPLEX,
-            0.6,
-            (0, 0, 255),
-            2
+        # ---------------------------------------------
+        # Execute Game Action
+        # ---------------------------------------------
+
+        game_controller.execute(gesture)
+
+        # ---------------------------------------------
+        # System Information
+        # ---------------------------------------------
+
+        system = system_info.get_info()
+
+        # ---------------------------------------------
+        # Camera Statistics
+        # ---------------------------------------------
+
+        camera_stats = camera_recovery.get_statistics()
+
+        # ---------------------------------------------
+        # Draw Professional Dashboard
+        # ---------------------------------------------
+
+        frame = draw_ui(
+
+            frame=frame,
+
+            gesture=gesture,
+
+            fps=fps,
+
+            runtime=runtime,
+
+            bbox=bbox,
+
+            hand_center=hand_center,
+
+            motion_trail=list(motion_trail),
+
+            average_fps=average_fps,
+
+            system_info=system,
+
+            camera_stats=camera_stats
+
         )
 
-    # -----------------------------------------------------
-    # Draw UI
-    # -----------------------------------------------------
+        # ---------------------------------------------
+        # Display
+        # ---------------------------------------------
 
-    frame = draw_ui(
-        frame=frame,
-        gesture=action,
-        hand_type=hand_type,
-        fps=fps,
-        bbox=bbox
-    )
+        cv2.imshow(
 
-    # -----------------------------------------------------
-    # Show Window
-    # -----------------------------------------------------
+            WINDOW_NAME,
 
-    cv2.imshow(
-        WINDOW_NAME,
-        frame
-    )
+            frame
 
-    key = cv2.waitKey(1) & 0xFF
+        )
 
-    if key == ord("q"):
-        break
+        # ---------------------------------------------
+        # Quit
+        # ---------------------------------------------
+
+        key = cv2.waitKey(1) & 0xFF
+
+        if key == ord("q"):
+
+            running = False
+
+    # =====================================================
+    # Cleanup
+    # =====================================================
+
+    print()
+
+    print("=" * 60)
+    print("Shutting Down...")
+    print("=" * 60)
 
 
-# =========================================================
-# Cleanup
-# =========================================================
+    # ---------------------------------------------
+    # Release Camera
+    # ---------------------------------------------
 
-cap.release()
+    if camera is not None:
 
-detector.close()
+        camera.release()
 
-cv2.destroyAllWindows()
+    # ---------------------------------------------
+    # Close MediaPipe
+    # ---------------------------------------------
 
-print("\nApplication Closed Successfully.")
+    hand_detector.close()
+
+    # ---------------------------------------------
+    # Destroy OpenCV Windows
+    # ---------------------------------------------
+
+    cv2.destroyAllWindows()
+
+# =====================================================
+# Entry Point
+# =====================================================
+
+if __name__ == "__main__":
+
+    try:
+
+        main()
+
+    except KeyboardInterrupt:
+
+        print()
+
+        print("Application Interrupted by User.")
+
+    except Exception as e:
+
+        print()
+
+        print("=" * 60)
+        print("Unexpected Error:")
+        print(e)
+        print("=" * 60)
